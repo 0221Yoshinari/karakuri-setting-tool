@@ -5,103 +5,111 @@ import numpy as np
 # --- ページ設定とデザイン ---
 st.set_page_config(layout="wide", page_title="スマスロ からくりサーカス 設定判別ツール")
 
-# 背景画像のCSS (一時的に無効化)
-# ★★★ 背景画像のCSSは現在コメントアウトされています ★★★
-# アプリが正常に動作することを確認後、再度有効化を検討します
-# background_image_css = """
-# <style>
-# /* 基本的なHTML/Bodyスタイルをリセットし、オーバーフローをstAppに任せる */
-# html, body {
-#     margin: 0;
-#     padding: 0;
-#     width: 100%;
-#     height: 100%; /* 高さを100%に設定 */
-#     overflow: hidden; /* body自体のスクロールは禁止し、stAppがスクロールを制御 */
-# }
+# 背景画像のCSS (GitHubに画像を配置した場合のパスを想定)
+# **必ず YOUR_GITHUB_USERNAME と YOUR_REPO_NAME をあなたのものに置き換えてください**
+background_image_css = """
+<style>
+/* 基本的なHTML/Bodyスタイルをリセットし、オーバーフローをstAppに任せる */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%; /* 高さを100%に設定 */
+    overflow: hidden; /* body自体のスクロールは禁止し、stAppがスクロールを制御 */
+}
 
-# /* Streamlitアプリ全体のコンテナ */
-# .stApp {
-#     background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/karakuri_bg.png"); /* あなたのURLのまま。もしファイル名を変更したらここも変更 */
-#     background-size: cover; /* 画面全体を覆う */
-#     background-position: center;
-#     background-repeat: no-repeat;
-#     background-attachment: fixed; /* 背景は固定のまま、スクロールしても常に画像が見える */
-#     min-height: 100vh; /* アプリ全体の最小高さをビューポートの高さに合わせる */
-#     height: 100%; /* stAppの高さを親要素（body）に合わせる */
-#     overflow-y: auto; /* ★stAppコンテナ自体が縦方向にスクロールできるように設定★ */
-#     position: relative; /* z-indexのために必要 */
-#     display: flex;
-#     flex-direction: column; /* 子要素を縦に並べる */
-# }
+/* Streamlitアプリ全体のコンテナ */
+.stApp {
+    background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/karakuri_bg.png"); /* ここをあなたのGitHubリポジトリ内の画像パスに修正 */
+    background-size: cover; /* 画面全体を覆う */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* 背景は固定のまま、スクロールしても常に画像が見える */
+    min-height: 100vh; /* アプリ全体の最小高さをビューポートの高さに合わせる */
+    height: 100%; /* stAppの高さを親要素（body）に合わせる */
+    overflow-y: auto; /* ★stAppコンテナ自体が縦方向にスクロールできるように設定★ */
+    position: relative; /* z-indexのために必要 */
+    display: flex;
+    flex-direction: column; /* 子要素を縦に並べる */
+}
 
-# /* 背景画像の上に重ねるオーバーレイ */
-# .stApp::before {
-#     content: "";
-#     position: fixed; /* オーバーレイも固定 */
-#     top: 0;
-#     left: 0;
-#     right: 0;
-#     bottom: 0;
-#     background-color: rgba(0, 0, 0, 0.3); /* 透明度を0.3に変更 (画像が50%程度薄く見えるように) */
-#     z-index: 1;
-#     pointer-events: none; /* オーバーレイがクリックやスクロールをブロックしないようにする */
-# }
+/* 背景画像の上に重ねるオーバーレイ */
+.stApp::before {
+    content: "";
+    position: fixed; /* オーバーレイも固定 */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3); /* 透明度を0.3に変更 (画像が50%程度薄く見えるように) */
+    z-index: 1;
+    pointer-events: none; /* ★★★ここを追加：オーバーレイがクリックやスクロールをブロックしないようにする★★★ */
+}
 
-# /* メインコンテンツブロック（入力項目などがある部分） */
-# .main .block-container {
-#     padding-top: 2rem;
-#     padding-bottom: 2rem;
-#     z-index: 2; /* コンテンツが背景画像より手前に来るように */
-#     position: relative; /* z-indexのために必要 */
-#     background-color: rgba(0, 0, 0, 0.7); /* コンテンツエリアの背景色を半透明に */
-#     border-radius: 10px;
-#     padding: 30px;
-#     flex-grow: 1; /* コンテンツブロックが利用可能なスペースを埋めるように成長 */
-# }
+/* メインコンテンツブロック（入力項目などがある部分） */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    z-index: 2; /* コンテンツが背景画像より手前に来るように */
+    position: relative; /* z-indexのために必要 */
+    background-color: rgba(0, 0, 0, 0.7); /* コンテンツエリアの背景色を半透明に */
+    border-radius: 10px;
+    padding: 30px;
+    flex-grow: 1; /* コンテンツブロックが利用可能なスペースを埋めるように成長 */
+}
 
-# /* その他のスタイル調整（色など） */
-# h1, h2, h3, h4, h5, h6, p, label, .st-ck, .st-bj, .st-bq {
-#     color: white !important;
-# }
-# .stSelectbox div[data-baseweb="select"] {
-#     background-color: #333 !important;
-#     color: white !important;
-# }
-# .stSelectbox div[data-baseweb="select"] div[data-testid="stSelectboxDropdown"] {
-#     background-color: #333 !important;
-#     color: white !important;
-# }
-# .stTextInput > div > div > input {
-#     background-color: #333 !important;
-#     color: white !important;
-# }
-# .stButton>button {
-#     background-color: #D35400; /* ボタンの背景色 */
-#     color: white; /* ボタンの文字色 */
-#     border-radius: 5px;
-#     border: none;
-#     padding: 10px 20px;
-# }
-# .stButton>button:hover {
-#     background-color: #E67E22;
-# }
-# .css-1r6dm7f { /* markdown text color */
-#     color: white;
-# }
-# </style>
-# """
-# st.markdown(background_image_css, unsafe_allow_html=True)
+/* その他のスタイル調整（色など） */
+h1, h2, h3, h4, h5, h6, p, label, .st-ck, .st-bj, .st-bq {
+    color: white !important;
+}
+.stSelectbox div[data-baseweb="select"] {
+    background-color: #333 !important;
+    color: white !important;
+}
+.stSelectbox div[data-baseweb="select"] div[data-testid="stSelectboxDropdown"] {
+    background-color: #333 !important;
+    color: white !important;
+}
+.stTextInput > div > div > input {
+    background-color: #333 !important;
+    color: white !important;
+}
+.stButton>button {
+    background-color: #D35400; /* ボタンの背景色 */
+    color: white; /* ボタンの文字色 */
+    border-radius: 5px;
+    border: none;
+    padding: 10px 20px;
+}
+.stButton>button:hover {
+    background-color: #E67E22;
+}
+.css-1r6dm7f { /* markdown text color */
+    color: white;
+}
+</style>
+"""
+st.markdown(background_image_css, unsafe_allow_html=True)
 
 # ヘッダー
 st.title("スマスロ からくりサーカス 設定判別ツール")
 st.markdown("---")
 
-# --- 設定示唆の基準値 (実際の解析値に合わせて調整してください) ---
-# CZ当選ゲーム数割合 (あくまで目安。設定ごとの詳細な振り分けがあれば更新)
-# ここは高設定の挙動（低ポイント帯が多い）をスコアに反映
-# 1000pt超えCZは設定6の可能性を大きく下げる（約90%減）というロジックに反映
+# --- 設定示唆の基準値 (私の裁量で設定。実際の解析値と異なる場合があります) ---
+# 各設定の基礎スコア（初期値）
+# 設定Lは考慮しない
+initial_setting_scores = {
+    '設定1': 100, '設定2': 110, '設定4': 150, '設定5': 180, '設定6': 200
+}
 
-# テーブル選択率
+# CZ当選ゲーム数による設定スコア調整（目安）
+# 低ゲーム数CZが多いほど高設定に加点、高ゲーム数CZは低設定に加点/高設定に減点
+cz_point_score_adjust = {
+    'low_point_bonus_high': {'設定4': 5, '設定5': 10, '設定6': 15}, # 100G以内CZ頻度が高い場合
+    'over_1000_penalty': {'設定6': -100, '設定5': -50, '設定4': -20} # 1000pt超えCZが出現した場合
+}
+
+# テーブル選択率（画像情報に基づく）
 table_rates = {
     '設定1': {'テーブル1': 0.49, 'テーブル2': 0.45, 'テーブル3': 0.04, 'テーブル4': 0.02},
     '設定2': {'テーブル1': 0.37, 'テーブル2': 0.54, 'テーブル3': 0.03, 'テーブル4': 0.06},
@@ -109,39 +117,50 @@ table_rates = {
     '設定5': {'テーブル1': 0.52, 'テーブル2': 0.36, 'テーブル3': 0.08, 'テーブル4': 0.04},
     '設定6': {'テーブル1': 0.42, 'テーブル2': 0.42, 'テーブル3': 0.08, 'テーブル4': 0.08},
 }
-
-# テーブル示唆
-table_indications = {
-    'テーブル1': '奇数示唆 (鳴海→勝→鳴海)',
-    'テーブル2': '偶数示唆 (勝→鳴海→勝)',
-    'テーブル3': '奇数の高設定示唆 (鳴海→勝→勝)',
-    'テーブル4': '偶数の高設定示唆 (勝→鳴海→鳴海)'
+# テーブル示唆の重み（各設定にどれだけ影響するか）
+table_score_weights = {
+    'テーブル1': {'設定1': 10, '設定2': 0, '設定4': -5, '設定5': 5, '設定6': -5}, # 奇数示唆
+    'テーブル2': {'設定1': 0, '設定2': 10, '設定4': 5, '設定5': -5, '設定6': 0},  # 偶数示唆
+    'テーブル3': {'設定1': -20, '設定2': -10, '設定4': 10, '設定5': 20, '設定6': 10}, # 奇数高設定示唆
+    'テーブル4': {'設定1': -20, '設定2': 10, '設定4': 20, '設定5': 10, '設定6': 20}  # 偶数高設定示唆
 }
 
-# AT終了画面の確率 (設定456確定台のデータと一般情報を元に仮定)
-# 公式の正確な振り分けがあれば更新してください
-at_end_screen_options_display = {
-    'フランシーヌ': '設定6濃厚',
-    'しろがね＆勝＆鳴海': '設定4以上濃厚',
-    'ギイ＋阿紫花': '設定2以上濃厚',
-    '女キャラ5人': '偶数設定示唆',
-    '敵キャラ5人': '奇数設定示唆',
-    '勝＋鳴海': 'デフォルト', # デフォルト画面
-    # 以下は画像からの追加画面
-    '奇数の高設定示唆画面': '奇数の高設定示唆',
-    '偶数の高設定示唆画面': '偶数の高設定示唆',
-    '設定2以上確定画面': '設定2以上確定',
-    '設定456確定画面': '設定456確定',
+# AT終了画面のスコア（画像情報に基づく）
+at_end_screen_scores = {
+    'フランシーヌ':           {'設定1': -100, '設定2': -100, '設定4': -100, '設定5': -100, '設定6': 500}, # 設定6濃厚
+    'しろがね＆勝＆鳴海':     {'設定1': -100, '設定2': -100, '設定4': 100, '設定5': 100, '設定6': 100},  # 設定4以上濃厚
+    'ギイ＋阿紫花':           {'設定1': -50,  '設定2': 50,   '設定4': 50,   '設定5': 50,   '設定6': 50},   # 設定2以上濃厚
+    '女キャラ5人':            {'設定1': -10,  '設定2': 20,   '設定4': 10,   '設定5': -10,  '設定6': 0},    # 偶数設定示唆
+    '敵キャラ5人':            {'設定1': 20,   '設定2': -10,  '設定4': -10,  '設定5': 10,   '設定6': 0},    # 奇数設定示唆
+    '勝＋鳴海':               {'設定1': 0,    '設定2': 0,    '設定4': 0,    '設定5': 0,    '設定6': 0},    # デフォルト
+    '奇数の高設定示唆画面':   {'設定1': -50,  '設定2': -20,  '設定4': 20,   '設定5': 50,   '設定6': 20},   # 奇数の高設定示唆
+    '偶数の高設定示唆画面':   {'設定1': -50,  '設定2': 20,   '設定4': 50,   '設定5': 20,   '設定6': 50},   # 偶数の高設定示唆
+    '設定2以上確定画面':      {'設定1': -100, '設定2': 100,  '設定4': 100,  '設定5': 100,  '設定6': 100},  # 設定2以上確定
+    '設定456確定画面':        {'設定1': -100, '設定2': -100, '設定4': 150,  '設定5': 150,  '設定6': 150},  # 設定456確定
 }
 
-# 運命の一撃 成功率 (仮の数値、ユーザーからの情報に基づき)
-# 強レア役は100%, 弱レア役は25%, 最終ゲーム小役で100%
-# ここでは「レア役・子役なし」の自力成功率を想定し、スコアに反映
-unmei_success_rates = {
-    '継続運命の一撃_設定6_自力': 0.80, # 小役なしでの成功率
-    '継続運命の一撃_設定4_自力': 0.60, # 小役なしでの成功率
-    '継続運命の一撃_低設定_自力': 0.30, # 小役なしでの成功率
+# 踊れ！オリンピア上乗せスコア
+olympia_addon_scores = {
+    '+6 (設定6濃厚)': {'設定1': -100, '設定2': -100, '設定4': -100, '設定5': -100, '設定6': 300},
+    '+4 (設定4以上濃厚)': {'設定1': -50, '設定2': -50, '設定4': 100, '設定5': 100, '設定6': 100},
+    '+20 (設定2以上濃厚)': {'設定1': -20, '設定2': 50, '設定4': 50, '設定5': 50, '設定6': 50}
 }
+
+# エンディングランプスコア
+ending_lamp_scores = {
+    '虹色 (設定6濃厚)': {'設定1': -1000, '設定2': -1000, '設定4': -1000, '設定5': -1000, '設定6': 1000} # 非常に強い示唆
+}
+
+# 運命の一撃スコア（ユーザー情報に基づき重み付け）
+unmei_success_score = {
+    '初回_自力成功_高設定': 100, # レア役なし・最終ゲーム小役なし成功
+    '継続_自力成功_設定6_期待': 50, # 80%以上
+    '継続_自力成功_設定4_期待': 30, # 60%以上
+    '継続_自力失敗_低設定_示唆': -30 # 低い成功率
+}
+
+# AT直撃スコア
+at_direct_hit_score_per_hit = {'設定4': 50, '設定5': 70, '設定6': 100} # 1回あたりの加点
 
 # --- A. からくりサーカス台自体の挙動に関する入力 ---
 st.header("A. 台の挙動に関する入力")
@@ -169,7 +188,6 @@ st.button("CZ当選履歴を追加", on_click=add_cz_entry)
 for i, cz_entry in enumerate(st.session_state.cz_data):
     cz_cols = st.columns([0.4, 0.4, 0.2])
     with cz_cols[0]:
-        # デフォルト値を0に設定
         st.session_state.cz_data[i]['point'] = st.number_input(f"CZ {i+1}回目: 当選ポイント", min_value=0, value=cz_entry['point'] if cz_entry['point'] != '' else 0, key=f"cz_point_{i}")
     with cz_cols[1]:
         st.session_state.cz_data[i]['from_karakuri_rareyaku'] = st.checkbox(f"からくりレア役契機？", value=cz_entry['from_karakuri_rareyaku'], key=f"cz_rareyaku_{i}")
@@ -270,7 +288,7 @@ for i, entry in enumerate(st.session_state.unmei_first):
         st.button("削除", key=f"remove_unmei_first_{i}", on_click=remove_unmei_first, args=(i,))
 
 st.markdown("**継続をかけた運命の一撃 (最大15回)**")
-st.button("継続運命の一撃を追加", on_click=add_unmei_continue)
+st.button("継続運命の一撃を追加", on_on_click=add_unmei_continue)
 for i, entry in enumerate(st.session_state.unmei_continue):
     cols = st.columns([0.4, 0.4, 0.2])
     with cols[0]:
@@ -374,25 +392,31 @@ if st.button("設定を判別する", key="run_analysis"):
     st.subheader("### 判別結果")
     st.write("---")
 
-    # 初期スコアと示唆リスト
-    overall_score = 0
-    indications = []
-    confidence_level = "低い" # 初期値
+    # 各設定の可能性スコアを初期化
+    setting_likelihood_scores = initial_setting_scores.copy()
 
     # --- A. 台の挙動に関する評価 ---
 
     # AT初当たり確率
-    if total_games > 0:
-        at_first_hit_rate = total_games / at_first_hit if at_first_hit > 0 else float('inf')
+    if total_games > 0 and at_first_hit > 0:
+        at_first_hit_rate = total_games / at_first_hit
         st.write(f"**AT初当たり確率: 1/{at_first_hit_rate:.2f}**")
-        if at_first_hit_rate < 300: # 高設定目安 (仮)
-            indications.append("AT初当たりが良好なため、高設定の可能性あり。")
-            overall_score += 5
-        elif at_first_hit_rate > 400: # 低設定目安 (仮)
-            indications.append("AT初当たりが重いため、低設定の可能性あり。")
-            overall_score -= 5
-        else:
-            indications.append("AT初当たりは中間設定域。")
+        # 仮の目安で各設定にスコア加算/減算
+        if at_first_hit_rate < 300: # 高設定寄り
+            setting_likelihood_scores['設定4'] += 10
+            setting_likelihood_scores['設定5'] += 20
+            setting_likelihood_scores['設定6'] += 30
+            setting_likelihood_scores['設定1'] -= 10
+            setting_likelihood_scores['設定2'] -= 5
+        elif at_first_hit_rate > 400: # 低設定寄り
+            setting_likelihood_scores['設定1'] += 20
+            setting_likelihood_scores['設定2'] += 10
+            setting_likelihood_scores['設定4'] -= 10
+            setting_likelihood_scores['設定5'] -= 20
+            setting_likelihood_scores['設定6'] -= 30
+    else:
+        st.write("**AT初当たり情報は入力されていません。**")
+
 
     # CZ当選履歴とポイント
     cz_success_points = [entry['point'] for entry in st.session_state.cz_data if entry['point'] is not None and entry['point'] > 0]
@@ -400,188 +424,268 @@ if st.button("設定を判別する", key="run_analysis"):
 
     if cz_success_points:
         st.write(f"**CZ当選履歴:** {cz_success_points} ポイント")
+        total_cz_count = len(cz_success_points)
         low_cz_count = sum(1 for p in cz_success_points if p <= 100) # 100G以内を早いとする目安
-        mid_cz_count = sum(1 for p in cz_success_points if 100 < p <= 500)
-        high_cz_count = sum(1 for p in cz_success_points if 500 < p <= 999)
         over_1000_cz_count = sum(1 for p in cz_success_points if p >= 1000)
 
-        if low_cz_count > len(cz_success_points) * 0.3: # 30%以上が低ポイントCZ
-            indications.append("低ゲーム数でのCZ当選が頻繁に確認されました。天国モード移行率に期待。")
-            overall_score += 4
+        if total_cz_count > 0 and low_cz_count / total_cz_count >= 0.3: # 30%以上が低ポイントCZ
+            st.write("→ 低ゲーム数でのCZ当選が頻繁に確認されました。")
+            for s in ['設定4', '設定5', '設定6']:
+                setting_likelihood_scores[s] += cz_point_score_adjust['low_point_bonus_high'].get(s, 0)
+            for s in ['設定1', '設定2']:
+                setting_likelihood_scores[s] -= 5 # 低設定は低ゲーム数CZが少ない
+
         if over_1000_cz_count > 0:
-            indications.append(f"**1000ポイント超えのCZ当選 ({over_1000_cz_count}回) が確認されました。設定6の可能性は大幅に低下します。(約90%減)**")
-            overall_score -= (over_1000_cz_count * 10) # 1回で-10点など、強力な減点
+            st.warning(f"**1000ポイント超えのCZ当選 ({over_1000_cz_count}回) が確認されました。**")
+            for s, penalty in cz_point_score_adjust['over_1000_penalty'].items():
+                setting_likelihood_scores[s] += penalty * over_1000_cz_count # 複数回出たらさらに減点
+            indications.append(f"1000pt超えCZ出現は設定6の可能性を大幅に低下させます。")
+            # 確定要素として、もし1000pt超えが複数回あれば設定6の可能性をほぼ0に
+            if over_1000_cz_count >= 2:
+                 setting_likelihood_scores['設定6'] = max(0, setting_likelihood_scores['設定6'] - 500) # 強力な減点
+
 
         if karakuri_cz_count > 0 and total_games > 0:
             karakuri_cz_rate = total_games / karakuri_cz_count
             st.write(f"**からくりレア役契機CZ確率: 1/{karakuri_cz_rate:.2f} ({karakuri_cz_count}回)**")
-            if karakuri_cz_rate < 500: # 目安
-                indications.append("からくりレア役契機のCZ当選率が良好です。高設定期待度アップ。")
-                overall_score += 5
-            elif karakuri_cz_rate > 1000: # 目安
-                indications.append("からくりレア役契機のCZ当選率が低めです。低設定の可能性。")
-                overall_score -= 3
+            if karakuri_cz_rate < 500: # 高設定目安
+                setting_likelihood_scores['設定4'] += 10
+                setting_likelihood_scores['設定5'] += 15
+                setting_likelihood_scores['設定6'] += 20
+                setting_likelihood_scores['設定1'] -= 5
+            elif karakuri_cz_rate > 1000: # 低設定目安
+                setting_likelihood_scores['設定1'] += 10
+                setting_likelihood_scores['設定2'] += 5
+                setting_likelihood_scores['設定4'] -= 5
+                setting_likelihood_scores['設定5'] -= 10
+                setting_likelihood_scores['設定6'] -= 15
     else:
         st.write("**CZ当選履歴は入力されていません。**")
 
     # AT終了画面
+    strong_fixed_setting = None # 確定示唆を追跡
     if selected_end_screens:
         st.write("**AT終了画面:**")
         for screen, count in end_screen_counts.items():
             if count > 0:
                 indication_text = at_end_screen_options_display.get(screen, '特定示唆なし')
                 st.write(f"- {screen} ({count}回出現) → **{indication_text}**")
+                
+                # スコア加算
+                for s in setting_likelihood_scores.keys():
+                    if screen in at_end_screen_scores and s in at_end_screen_scores[screen]:
+                        setting_likelihood_scores[s] += at_end_screen_scores[screen][s] * count
+
+                # 確定示唆の処理 (ここが最重要)
                 if "設定6濃厚" in indication_text:
-                    overall_score += 50
-                    confidence_level = "非常に高い"
+                    strong_fixed_setting = '設定6'
                 elif "設定4以上濃厚" in indication_text or "設定456確定" in indication_text:
-                    overall_score += 30
-                    confidence_level = "高い"
+                    if not strong_fixed_setting or strong_fixed_setting == '設定4以上': # より強い示唆がない場合のみ上書き
+                        strong_fixed_setting = '設定4以上'
                 elif "設定2以上確定" in indication_text:
-                    overall_score += 15
-                elif "高設定示唆" in indication_text:
-                    overall_score += 10
-                elif "偶数設定示唆" in indication_text or "奇数設定示唆" in indication_text:
-                    overall_score += 5
+                    if not strong_fixed_setting or (strong_fixed_setting != '設定4以上' and strong_fixed_setting != '設定6'):
+                        strong_fixed_setting = '設定2以上'
+    else:
+        st.write("**AT終了画面は入力されていません。**")
+
 
     # AT中のテーブル選択
     if st.session_state.at_tables:
         st.write("**AT中のテーブル選択履歴:**")
         for i, at_table in enumerate(st.session_state.at_tables):
             st.write(f"AT {i+1}回目:")
-            selected_tables_names = []
-            # '選択なし'を除外して表示用のリストを作成
-            if at_table['start'] != '選択なし': selected_tables_names.append(at_table['start'])
-            if at_table['success1'] != '選択なし': selected_tables_names.append(at_table['success1'])
-            if at_table['success2'] != '選択なし': selected_tables_names.append(at_table['success2'])
+            selected_tables_base = [] # 'テーブルX'だけの名前
+            if at_table['start'] != '選択なし': selected_tables_base.append(at_table['start'].split(' ')[0])
+            if at_table['success1'] != '選択なし': selected_tables_base.append(at_table['success1'].split(' ')[0])
+            if at_table['success2'] != '選択なし': selected_tables_base.append(at_table['success2'].split(' ')[0])
 
-            if selected_tables_names:
-                st.write(f"- 選択されたテーブル: {', '.join(selected_tables_names)}")
-                for table_display_name in selected_tables_names:
-                    # 'テーブルX (示唆内容)' から 'テーブルX' だけを抽出
-                    table_name = table_display_name.split(' ')[0]
-                    if table_name in ['テーブル3', 'テーブル4']:
-                        indications.append(f"{table_name} ({table_indications[table_name]})の選択が確認されました。高設定期待度アップ。")
-                        overall_score += 8
+            if selected_tables_base:
+                st.write(f"- 選択されたテーブル: {', '.join([t + ' (' + table_indications[t] + ')' for t in selected_tables_base])}")
+                for table_name in selected_tables_base:
+                    for s in setting_likelihood_scores.keys():
+                        setting_likelihood_scores[s] += table_score_weights.get(table_name, {}).get(s, 0)
             else:
                 st.write("- (入力なし)")
 
     # 踊れ！オリンピア中の上乗せ数字
     if olympia_addon != '選択なし' and olympia_addon != 'その他':
         st.write(f"**踊れ！オリンピア中の上乗せ数字: {olympia_addon}**")
+        for s in setting_likelihood_scores.keys():
+            if olympia_addon in olympia_addon_scores and s in olympia_addon_scores[olympia_addon]:
+                setting_likelihood_scores[s] += olympia_addon_scores[olympia_addon][s]
+        
+        # 確定示唆の処理
         if '+6' in olympia_addon:
-            indications.append("踊れ！オリンピア「+6」出現 → 設定6濃厚！")
-            overall_score += 40
-            confidence_level = "非常に高い"
+            strong_fixed_setting = '設定6'
         elif '+4' in olympia_addon:
-            indications.append("踊れ！オリンピア「+4」出現 → 設定4以上濃厚！")
-            overall_score += 25
-            confidence_level = "高い"
+            if not strong_fixed_setting or strong_fixed_setting == '設定2以上':
+                strong_fixed_setting = '設定4以上'
         elif '+20' in olympia_addon:
-            indications.append("踊れ！オリンピア「+20」出現 → 設定2以上濃厚！")
-            overall_score += 10
+            if not strong_fixed_setting or (strong_fixed_setting != '設定4以上' and strong_fixed_setting != '設定6'):
+                strong_fixed_setting = '設定2以上'
+    else:
+        st.write("**踊れ！オリンピア上乗せ数字は入力されていません。**")
+
 
     # エンディング中のレア役時、筐体上部ランプ色
     if ending_lamp == '虹色 (設定6濃厚)':
         st.write("**エンディング中ランプ色: 虹色 (設定6濃厚)**")
-        indications.append("エンディング中ランプが虹色 → 設定6濃厚！")
-        overall_score += 50
-        confidence_level = "非常に高い"
+        for s in setting_likelihood_scores.keys():
+            setting_likelihood_scores[s] += ending_lamp_scores['虹色 (設定6濃厚)'].get(s, 0)
+        strong_fixed_setting = '設定6' # 虹色は最も強い確定
 
     # 運命の一撃の成功状況
     st.write("**運命の一撃 成功状況:**")
-    total_first_unmei = len(st.session_state.unmei_first)
-    total_continue_unmei = len(st.session_state.unmei_continue)
-
-    rare_yakunashi_first_success = sum(1 for entry in st.session_state.unmei_first if entry['success'] == '成功' and entry['trigger'] == 'レア役なし・最終ゲーム小役なし')
-    if rare_yakunashi_first_success > 0:
-        indications.append(f"最初の運命の一撃でレア役・最終ゲーム小役なし成功 ({rare_yakunashi_first_success}回)を確認。これは非常に強力な高設定示唆です！")
-        overall_score += (rare_yakunashi_first_success * 20) # 1回あたり20点
-
-    successful_continue_unmei_no_forced = 0
-    total_continue_unmei_eval = 0 # 自力成功率を計算するための試行回数
-    for entry in st.session_state.unmei_continue:
+    total_first_unmei_eval = 0
+    successful_first_unmei_no_forced = 0
+    for entry in st.session_state.unmei_first:
         if entry['success'] == '成功':
-            if entry['trigger'] not in ['強レア役', '最終ゲーム小役']: # 強制成功を除外した自力成功
+            total_first_unmei_eval += 1
+            if entry['trigger'] == 'レア役なし・最終ゲーム小役なし':
+                successful_first_unmei_no_forced += 1
+                for s in setting_likelihood_scores.keys():
+                    setting_likelihood_scores[s] += unmei_success_score['初回_自力成功_高設定'] # 強力な加点
+
+    if total_first_unmei_eval > 0:
+        st.write(f"- 最初の運命の一撃（自力成功）: {successful_first_unmei_no_forced}回 / {total_first_unmei_eval}回")
+
+    total_continue_unmei_eval = 0
+    successful_continue_unmei_no_forced = 0
+    for entry in st.session_state.unmei_continue:
+        if entry['success'] != '選択なし': # 成功・失敗どちらでも試行回数にカウント
+            total_continue_unmei_eval += 1
+            if entry['success'] == '成功' and entry['trigger'] not in ['強レア役', '最終ゲーム小役']: # 強制成功を除外
                 successful_continue_unmei_no_forced += 1
-            total_continue_unmei_eval += 1 # 成功失敗問わずカウント
-        elif entry['success'] == '失敗':
-             total_continue_unmei_eval += 1 # 失敗も試行回数に含める
 
     if total_continue_unmei_eval > 0:
         continue_unmei_rate = successful_continue_unmei_no_forced / total_continue_unmei_eval
-        st.write(f"継続運命の一撃 (レア役・最終ゲーム小役なし) 成功率: {continue_unmei_rate:.2%} ({successful_continue_unmei_no_forced}回 / {total_continue_unmei_eval}回)")
+        st.write(f"- 継続運命の一撃（自力成功）: {continue_unmei_rate:.2%} ({successful_continue_unmei_no_forced}回 / {total_continue_unmei_eval}回)")
+        
+        # 成功率に応じてスコア加算
         if continue_unmei_rate >= unmei_success_rates['継続運命の一撃_設定6_自力']: # 80%
-            indications.append("継続運命の一撃成功率が非常に高いです (設定6目安80%以上)。設定6の期待大！")
-            overall_score += 15
+            setting_likelihood_scores['設定6'] += unmei_success_score['継続_自力成功_設定6_期待']
+            setting_likelihood_scores['設定5'] += unmei_success_score['継続_自力成功_設定4_期待'] # 5も恩恵あり
         elif continue_unmei_rate >= unmei_success_rates['継続運命の一撃_設定4_自力']: # 60%
-            indications.append("継続運命の一撃成功率が比較的高めです (設定4目安60%以上)。設定4以上の期待。")
-            overall_score += 8
-        elif continue_unmei_rate < unmei_success_rates['継続運命の一撃_低設定_自力']: # 30%
-            indications.append("継続運命の一撃成功率が低めです。低設定の可能性。")
-            overall_score -= 5
+            setting_likelihood_scores['設定4'] += unmei_success_score['継続_自力成功_設定4_期待']
+            setting_likelihood_scores['設定5'] += unmei_success_score['継続_自力成功_設定4_期待']
+        elif continue_unmei_rate < unmei_success_rates['継続運命の一撃_低設定_自力'] and successful_continue_unmei_no_forced == 0: # 30%未満かつ自力成功が0ならさらに減点
+            for s in ['設定1', '設定2']:
+                setting_likelihood_scores[s] += abs(unmei_success_score['継続_自力失敗_低設定_示唆']) # 低設定側に加点
+            for s in ['設定4', '設定5', '設定6']:
+                setting_likelihood_scores[s] += unmei_success_score['継続_自力失敗_低設定_示唆'] # 高設定側から減点
     else:
-        st.write("継続運命の一撃は入力されていません。")
+        st.write("運命の一撃は入力されていません。")
 
     # AT直撃
     if at_direct_hit_count > 0:
         st.write(f"**AT直撃回数: {at_direct_hit_count}回**")
-        indications.append(f"AT直撃 ({at_direct_hit_count}回) が確認されました。これは強力な高設定示唆です！")
-        overall_score += (at_direct_hit_count * 15) # 1回あたり15点
+        for s in ['設定4', '設定5', '設定6']:
+            setting_likelihood_scores[s] += at_direct_hit_score_per_hit.get(s, 0) * at_direct_hit_count # 直撃回数に応じて加点
+        # 直撃回数が多ければ高設定示唆を強化
+        if at_direct_hit_count >= 2:
+            if not strong_fixed_setting or (strong_fixed_setting != '設定6'):
+                 strong_fixed_setting = '設定4以上' # 複数回なら4以上示唆を強化
 
 
     # --- B. 店舗・外部要因に関する評価 (スコアリング) ---
     st.markdown("---")
     st.subheader("### 店舗・外部要因からの評価")
-    external_score = 0
+    
+    external_score_multiplier = 0 # 外部要因の総合的な影響度
 
-    # スコアリング定義
-    external_scores = {
-        'hall_karakuri_tendency': {'高い': 3, '普通': 0, '低い': -3, '選択しない': 0},
-        'is_main_machine': {'はい': 2, 'いいえ': 0, '選択しない': 0},
-        'event_day_type': {'強いイベント日 (例: 周年、全台系示唆)': 5, '弱いイベント日 (例: 特定機種示唆)': 3, 'イベントなし': 0, '選択しない': 0},
-        'karakuri_coverage': {'ある': 2, 'ない': 0, '選択しない': 0},
-        'high_setting_coverage': {'ある': 4, 'ない': 0, '選択しない': 0},
-        'is_normal_day': {'はい': 0, 'いいえ': 0, '選択しない': 0},
-        'performer_presence': {'いる': 3, 'いない': 0, '選択しない': 0},
-        'seen_setting6_in_hall': {'ある': 5, 'ない': 0, '選択しない': 0},
-        'hall_setting6_tendency': {'高い': 4, '普通': 0, '低い': -4, '選択しない': 0},
+    external_score_map = {
+        'hall_karakuri_tendency': {'高い': 0.10, '普通': 0, '低い': -0.10, '選択しない': 0}, # 倍率として影響
+        'is_main_machine': {'はい': 0.05, 'いいえ': 0, '選択しない': 0},
+        'event_day_type': {'強いイベント日 (例: 周年、全台系示唆)': 0.20, '弱いイベント日 (例: 特定機種示唆)': 0.10, 'イベントなし': -0.05, '選択しない': 0},
+        'karakuri_coverage': {'ある': 0.05, 'ない': 0, '選択しない': 0},
+        'high_setting_coverage': {'ある': 0.15, 'ない': 0, '選択しない': 0},
+        'performer_presence': {'いる': 0.10, 'いない': 0, '選択しない': 0},
+        'seen_setting6_in_hall': {'ある': 0.25, 'ない': -0.10, '選択しない': 0}, # 過去の実績は非常に重要
+        'hall_setting6_tendency': {'高い': 0.15, '普通': 0, '低い': -0.15, '選択しない': 0},
     }
 
-    external_score += external_scores['hall_karakuri_tendency'].get(hall_karakuri_tendency, 0)
-    external_score += external_scores['is_main_machine'].get(is_main_machine, 0)
-    external_score += external_scores['event_day_type'].get(event_day_type, 0)
-    external_score += external_scores['karakuri_coverage'].get(karakuri_coverage, 0)
-    external_score += external_scores['high_setting_coverage'].get(high_setting_coverage, 0)
-    external_score += external_scores['performer_presence'].get(performer_presence, 0)
-    external_score += external_scores['seen_setting6_in_hall'].get(seen_setting6_in_hall, 0)
-    external_score += external_scores['hall_setting6_tendency'].get(hall_setting6_tendency, 0)
+    # 各外部要因の倍率を計算
+    external_score_multiplier += external_score_map['hall_karakuri_tendency'].get(hall_karakuri_tendency, 0)
+    external_score_multiplier += external_score_map['is_main_machine'].get(is_main_machine, 0)
+    external_score_multiplier += external_score_map['event_day_type'].get(event_day_type, 0)
+    external_score_multiplier += external_score_map['karakuri_coverage'].get(karakuri_coverage, 0)
+    external_score_multiplier += external_score_map['high_setting_coverage'].get(high_setting_coverage, 0)
+    external_score_multiplier += external_score_map['performer_presence'].get(performer_presence, 0)
+    external_score_multiplier += external_score_map['seen_setting6_in_hall'].get(seen_setting6_in_hall, 0)
+    external_score_multiplier += external_score_map['hall_setting6_tendency'].get(hall_setting6_tendency, 0)
 
-    if external_score > 0:
-        indications.append(f"店舗・外部要因からの加点要素が確認されました (スコア: +{external_score}点)。高設定投入の期待度が高まります。")
-    elif external_score < 0:
-        indications.append(f"店舗・外部要因からの減点要素が確認されました (スコア: {external_score}点)。高設定投入の期待度が低めです。")
-    else:
-        indications.append("店舗・外部要因からは特段の加点・減点要素は見られません。")
+    # 各設定スコアに外部要因の倍率を適用（高設定に有利に働くように）
+    # ただし、低設定への影響は小さくする
+    for s in setting_likelihood_scores.keys():
+        if s in ['設定4', '設定5', '設定6']:
+            setting_likelihood_scores[s] *= (1 + external_score_multiplier)
+        elif s in ['設定1', '設定2']:
+            # 低設定は外部要因の影響を小さくするか、逆の影響を持たせる（例: 高設定期待が高い日は低設定の期待度が下がる）
+            setting_likelihood_scores[s] *= (1 - external_score_multiplier * 0.5) # 高設定寄りなら低設定は少し下がる
+        setting_likelihood_scores[s] = max(0, setting_likelihood_scores[s]) # スコアがマイナスにならないように
 
     if other_machine_status:
         st.write(f"**その他の台の状況:** {other_machine_status}")
 
-    overall_score += external_score
 
+    # --- 総合判定（各設定の可能性と高設定期待度） ---
     st.markdown("---")
     st.subheader("### 総合判定")
 
-    if confidence_level == "非常に高い":
-        st.success("**🎉 設定6濃厚の強力な示唆が複数確認されました！ 設定6である可能性が非常に高いです！ 🎉**")
-    elif confidence_level == "高い":
-        st.success("**✨ 設定4以上濃厚の示唆や、設定6示唆の要素が確認されました。高設定の可能性が高いです！ ✨**")
-    elif overall_score >= 20: # 閾値は調整してください
-        st.warning(f"**👍 高設定に期待できる要素が複数確認されました！ (総合スコア: {overall_score})**")
-    elif overall_score >= 0:
-        st.info(f"**🤔 現時点では判断が難しいです。引き続き、より強い示唆や数値の変化に注目してください。 (総合スコア: {overall_score})**")
+    # 確定示唆によるフィルタリング
+    if strong_fixed_setting:
+        st.success(f"**🎉 {strong_fixed_setting}確定レベルの強力な示唆が確認されました！ 🎉**")
+        for s in list(setting_likelihood_scores.keys()): # dictionary size might change during iteration
+            if strong_fixed_setting == '設定6':
+                if s != '設定6': setting_likelihood_scores[s] = 0
+            elif strong_fixed_setting == '設定4以上':
+                if s in ['設定1', '設定2']: setting_likelihood_scores[s] = 0
+            elif strong_fixed_setting == '設定2以上':
+                if s == '設定1': setting_likelihood_scores[s] = 0
+        
+        # 確定示唆が出た場合のスコア調整（設定6を極端に高くする等）
+        if strong_fixed_setting == '設定6':
+            setting_likelihood_scores['設定6'] = 10000 # 圧倒的に高く
+        elif strong_fixed_setting == '設定4以上':
+            setting_likelihood_scores['設定4'] *= 2
+            setting_likelihood_scores['設定5'] *= 2
+            setting_likelihood_scores['設定6'] *= 2
+        elif strong_fixed_setting == '設定2以上':
+            setting_likelihood_scores['設定2'] *= 1.5
+            setting_likelihood_scores['設定4'] *= 1.5
+            setting_likelihood_scores['設定5'] *= 1.5
+            setting_likelihood_scores['設定6'] *= 1.5
+
+    # 全てのスコアが0の場合の処理
+    total_score_sum = sum(setting_likelihood_scores.values())
+    if total_score_sum == 0:
+        st.info("現時点では判断できる材料が少ないか、相殺する要素が多いです。")
+        st.write("各設定の可能性:")
+        for s in setting_likelihood_scores.keys():
+            st.write(f"- {s}: 0.00%")
+        st.write("**高設定期待度: 0.00%**")
     else:
-        st.error(f"**👎 低設定を示唆する要素や、高設定を否定する要素が確認されました。遊技継続は慎重に。 (総合スコア: {overall_score})**")
+        # 各設定の可能性パーセンテージを計算
+        st.write("**各設定の可能性:**")
+        probabilities = {}
+        for s, score in setting_likelihood_scores.items():
+            prob = (score / total_score_sum) * 100
+            probabilities[s] = prob
+            st.write(f"- **{s}: {prob:.2f}%**")
+
+        # 高設定期待度（設定4,5,6の合計）
+        high_setting_prob = probabilities.get('設定4', 0) + probabilities.get('設定5', 0) + probabilities.get('設定6', 0)
+        st.markdown(f"**### 高設定期待度: {high_setting_prob:.2f}%**")
+
+        # 総合的なメッセージ
+        if high_setting_prob >= 80:
+            st.success("🎉 高設定（特に設定6）である可能性が非常に高いです！🎉")
+        elif high_setting_prob >= 60:
+            st.success("✨ 高設定である可能性が高いです！✨")
+        elif high_setting_prob >= 40:
+            st.warning("👍 中間設定以上、または高設定に期待できる要素があります。")
+        else:
+            st.error("👎 低設定である可能性が高いか、高設定を否定する要素が見られます。")
 
     st.markdown("---")
     st.write("**詳細な示唆内容:**")
@@ -591,4 +695,4 @@ if st.button("設定を判別する", key="run_analysis"):
     else:
         st.write("現時点では特段の示唆はありません。")
 
-    st.write("\n_※このツールは提供された情報に基づいた推測であり、実際の遊技結果やホールの状況によって設定は変動します。最終的な判断はご自身の責任で行ってください。_")
+    st.write("\n_※表示される数値は、提供された情報と私の裁量による重み付けに基づいた「可能性の目安」です。実際の統計的な確率ではありませんので、最終的な判断はご自身の責任で行ってください。_")
