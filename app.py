@@ -5,91 +5,92 @@ import numpy as np
 # --- ページ設定とデザイン ---
 st.set_page_config(layout="wide", page_title="スマスロ からくりサーカス 設定判別ツール")
 
-# 背景画像のCSS (GitHubに画像を配置した場合のパスを想定)
-# **必ず YOUR_GITHUB_USERNAME と YOUR_REPO_NAME をあなたのものに置き換えてください**
-background_image_css = """
-<style>
-/* 基本的なHTML/Bodyスタイルをリセットし、オーバーフローをstAppに任せる */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%; /* 高さを100%に設定 */
-    overflow: hidden; /* body自体のスクロールは禁止し、stAppがスクロールを制御 */
-}
+# 背景画像のCSS (一時的に無効化)
+# ★★★ 背景画像のCSSは現在コメントアウトされています ★★★
+# アプリが正常に動作することを確認後、再度有効化を検討します
+# background_image_css = """
+# <style>
+# /* 基本的なHTML/Bodyスタイルをリセットし、オーバーフローをstAppに任せる */
+# html, body {
+#     margin: 0;
+#     padding: 0;
+#     width: 100%;
+#     height: 100%; /* 高さを100%に設定 */
+#     overflow: hidden; /* body自体のスクロールは禁止し、stAppがスクロールを制御 */
+# }
 
-/* Streamlitアプリ全体のコンテナ */
-.stApp {
-    background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/karakuri_bg.png"); /* あなたのURLのまま。もしファイル名を変更したらここも変更 */
-    background-size: cover; /* 画面全体を覆う */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed; /* 背景は固定のまま、スクロールしても常に画像が見える */
-    min-height: 100vh; /* アプリ全体の最小高さをビューポートの高さに合わせる */
-    height: 100%; /* stAppの高さを親要素（body）に合わせる */
-    overflow-y: auto; /* ★stAppコンテナ自体が縦方向にスクロールできるように設定★ */
-    position: relative; /* z-indexのために必要 */
-    display: flex;
-    flex-direction: column; /* 子要素を縦に並べる */
-}
+# /* Streamlitアプリ全体のコンテナ */
+# .stApp {
+#     background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/karakuri_bg.png"); /* あなたのURLのまま。もしファイル名を変更したらここも変更 */
+#     background-size: cover; /* 画面全体を覆う */
+#     background-position: center;
+#     background-repeat: no-repeat;
+#     background-attachment: fixed; /* 背景は固定のまま、スクロールしても常に画像が見える */
+#     min-height: 100vh; /* アプリ全体の最小高さをビューポートの高さに合わせる */
+#     height: 100%; /* stAppの高さを親要素（body）に合わせる */
+#     overflow-y: auto; /* ★stAppコンテナ自体が縦方向にスクロールできるように設定★ */
+#     position: relative; /* z-indexのために必要 */
+#     display: flex;
+#     flex-direction: column; /* 子要素を縦に並べる */
+# }
 
-/* 背景画像の上に重ねるオーバーレイ */
-.stApp::before {
-    content: "";
-    position: fixed; /* オーバーレイも固定 */
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3); /* 透明度を0.3に変更 (画像が50%程度薄く見えるように) */
-    z-index: 1;
-}
+# /* 背景画像の上に重ねるオーバーレイ */
+# .stApp::before {
+#     content: "";
+#     position: fixed; /* オーバーレイも固定 */
+#     top: 0;
+#     left: 0;
+#     right: 0;
+#     bottom: 0;
+#     background-color: rgba(0, 0, 0, 0.3); /* 透明度を0.3に変更 (画像が50%程度薄く見えるように) */
+#     z-index: 1;
+#     pointer-events: none; /* オーバーレイがクリックやスクロールをブロックしないようにする */
+# }
 
-/* メインコンテンツブロック（入力項目などがある部分） */
-.main .block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    z-index: 2; /* コンテンツが背景画像より手前に来るように */
-    position: relative; /* z-indexのために必要 */
-    background-color: rgba(0, 0, 0, 0.7); /* コンテンツエリアの背景色を半透明に */
-    border-radius: 10px;
-    padding: 30px;
-    flex-grow: 1; /* コンテンツブロックが利用可能なスペースを埋めるように成長 */
-    /* overflow-y: auto; は .stApp で制御するためここでは不要 */
-}
+# /* メインコンテンツブロック（入力項目などがある部分） */
+# .main .block-container {
+#     padding-top: 2rem;
+#     padding-bottom: 2rem;
+#     z-index: 2; /* コンテンツが背景画像より手前に来るように */
+#     position: relative; /* z-indexのために必要 */
+#     background-color: rgba(0, 0, 0, 0.7); /* コンテンツエリアの背景色を半透明に */
+#     border-radius: 10px;
+#     padding: 30px;
+#     flex-grow: 1; /* コンテンツブロックが利用可能なスペースを埋めるように成長 */
+# }
 
-/* その他のスタイル調整（色など） */
-h1, h2, h3, h4, h5, h6, p, label, .st-ck, .st-bj, .st-bq {
-    color: white !important;
-}
-.stSelectbox div[data-baseweb="select"] {
-    background-color: #333 !important;
-    color: white !important;
-}
-.stSelectbox div[data-baseweb="select"] div[data-testid="stSelectboxDropdown"] {
-    background-color: #333 !important;
-    color: white !important;
-}
-.stTextInput > div > div > input {
-    background-color: #333 !1important;
-    color: white !important;
-}
-.stButton>button {
-    background-color: #D35400; /* ボタンの背景色 */
-    color: white; /* ボタンの文字色 */
-    border-radius: 5px;
-    border: none;
-    padding: 10px 20px;
-}
-.stButton>button:hover {
-    background-color: #E67E22;
-}
-.css-1r6dm7f { /* markdown text color */
-    color: white;
-}
-</style>
-"""
-st.markdown(background_image_css, unsafe_allow_html=True)
+# /* その他のスタイル調整（色など） */
+# h1, h2, h3, h4, h5, h6, p, label, .st-ck, .st-bj, .st-bq {
+#     color: white !important;
+# }
+# .stSelectbox div[data-baseweb="select"] {
+#     background-color: #333 !important;
+#     color: white !important;
+# }
+# .stSelectbox div[data-baseweb="select"] div[data-testid="stSelectboxDropdown"] {
+#     background-color: #333 !important;
+#     color: white !important;
+# }
+# .stTextInput > div > div > input {
+#     background-color: #333 !important;
+#     color: white !important;
+# }
+# .stButton>button {
+#     background-color: #D35400; /* ボタンの背景色 */
+#     color: white; /* ボタンの文字色 */
+#     border-radius: 5px;
+#     border: none;
+#     padding: 10px 20px;
+# }
+# .stButton>button:hover {
+#     background-color: #E67E22;
+# }
+# .css-1r6dm7f { /* markdown text color */
+#     color: white;
+# }
+# </style>
+# """
+# st.markdown(background_image_css, unsafe_allow_html=True)
 
 # ヘッダー
 st.title("スマスロ からくりサーカス 設定判別ツール")
