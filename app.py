@@ -9,21 +9,31 @@ st.set_page_config(layout="wide", page_title="スマスロ からくりサーカ
 # **必ず YOUR_GITHUB_USERNAME と YOUR_REPO_NAME をあなたのものに置き換えてください**
 background_image_css = """
 <style>
+/* 基本的なHTML/Bodyスタイルをリセットし、オーバーフローをstAppに任せる */
 html, body {
-    height: 100%;
     margin: 0;
-    overflow: auto; /* HTMLとbodyがスクロールできるように設定 */
+    padding: 0;
+    width: 100%;
+    height: 100%; /* 高さを100%に設定 */
+    overflow: hidden; /* body自体のスクロールは禁止し、stAppがスクロールを制御 */
 }
+
+/* Streamlitアプリ全体のコンテナ */
 .stApp {
-    background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/karakuri_bg.png"); /* ここをあなたのGitHubリポジトリ内の画像パスに修正 */
+    background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/karakuri_bg.png"); /* あなたのURLのまま。もしファイル名を変更したらここも変更 */
     background-size: cover; /* 画面全体を覆う */
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed; /* 背景は固定のまま、スクロールしても常に画像が見える */
     min-height: 100vh; /* アプリ全体の最小高さをビューポートの高さに合わせる */
+    height: 100%; /* stAppの高さを親要素（body）に合わせる */
+    overflow-y: auto; /* ★stAppコンテナ自体が縦方向にスクロールできるように設定★ */
+    position: relative; /* z-indexのために必要 */
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* 子要素を縦に並べる */
 }
+
+/* 背景画像の上に重ねるオーバーレイ */
 .stApp::before {
     content: "";
     position: fixed; /* オーバーレイも固定 */
@@ -31,20 +41,24 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3); /* ★透明度を0.3に変更 (画像が50%程度薄く見えるように)★ */
+    background-color: rgba(0, 0, 0, 0.3); /* 透明度を0.3に変更 (画像が50%程度薄く見えるように) */
     z-index: 1;
 }
+
+/* メインコンテンツブロック（入力項目などがある部分） */
 .main .block-container {
     padding-top: 2rem;
     padding-bottom: 2rem;
     z-index: 2; /* コンテンツが背景画像より手前に来るように */
-    position: relative;
+    position: relative; /* z-indexのために必要 */
     background-color: rgba(0, 0, 0, 0.7); /* コンテンツエリアの背景色を半透明に */
     border-radius: 10px;
     padding: 30px;
-    flex-grow: 1; /* コンテンツが利用可能なスペースを埋める */
-    overflow-y: auto; /* コンテンツが多すぎる場合にこの部分がスクロールするように */
+    flex-grow: 1; /* コンテンツブロックが利用可能なスペースを埋めるように成長 */
+    /* overflow-y: auto; は .stApp で制御するためここでは不要 */
 }
+
+/* その他のスタイル調整（色など） */
 h1, h2, h3, h4, h5, h6, p, label, .st-ck, .st-bj, .st-bq {
     color: white !important;
 }
@@ -57,7 +71,7 @@ h1, h2, h3, h4, h5, h6, p, label, .st-ck, .st-bj, .st-bq {
     color: white !important;
 }
 .stTextInput > div > div > input {
-    background-color: #333 !important;
+    background-color: #333 !1important;
     color: white !important;
 }
 .stButton>button {
