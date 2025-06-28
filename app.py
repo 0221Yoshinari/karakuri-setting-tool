@@ -283,18 +283,20 @@ for i, entry in enumerate(st.session_state.unmei_first):
     with cols[0]:
         st.session_state.unmei_first[i]['success'] = st.selectbox(f"初回運命 {i+1}回目: 結果", options=unmei_options, index=unmei_options.index(entry['success']), key=f"unmei_first_success_{i}")
     with cols[1]:
-        st.session_state.unmei_first[i]['trigger'] = st.selectbox(f"初回運命 {i+1}回目: 契機", options=trigger_options, index=trigger_options.index(entry['trigger']), key=f"unmei_first_trigger_{i}")
+        # ★★★ここが変更点★★：ValueError回避 & 正しいoptions変数を指定
+        st.session_state.unmei_first[i]['trigger'] = st.selectbox(f"初回運命 {i+1}回目: 契機", options=trigger_options, index=trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0, key=f"unmei_first_trigger_{i}")
     with cols[2]:
         st.button("削除", key=f"remove_unmei_first_{i}", on_click=remove_unmei_first, args=(i,))
 
 st.markdown("**継続をかけた運命の一撃 (最大15回)**")
-st.button("継続運命の一撃を追加", on_on_click=add_unmei_continue)
+st.button("継続運命の一撃を追加", on_click=add_unmei_continue)
 for i, entry in enumerate(st.session_state.unmei_continue):
     cols = st.columns([0.4, 0.4, 0.2])
     with cols[0]:
         st.session_state.unmei_continue[i]['success'] = st.selectbox(f"継続運命 {i+1}回目: 結果", options=unmei_options, index=unmei_options.index(entry['success']), key=f"unmei_continue_success_{i}")
     with cols[1]:
-        st.session_state.unmei_continue[i]['trigger'] = st.selectbox(f"継続運命 {i+1}回目: 契機", options=trigger_options, index=trigger_options.index(entry['trigger']), key=f"unmei_continue_trigger_{i}")
+        # ★★★ここが変更点★★：ValueError回避 & 正しいoptions変数を指定
+        st.session_state.unmei_continue[i]['trigger'] = st.selectbox(f"継続運命 {i+1}回目: 契機", options=trigger_options, index=trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0, key=f"unmei_continue_trigger_{i}")
     with cols[2]:
         st.button("削除", key=f"remove_unmei_continue_{i}", on_click=remove_unmei_continue, args=(i,))
 
@@ -439,7 +441,6 @@ if st.button("設定を判別する", key="run_analysis"):
             st.warning(f"**1000ポイント超えのCZ当選 ({over_1000_cz_count}回) が確認されました。**")
             for s, penalty in cz_point_score_adjust['over_1000_penalty'].items():
                 setting_likelihood_scores[s] += penalty * over_1000_cz_count # 複数回出たらさらに減点
-            indications.append(f"1000pt超えCZ出現は設定6の可能性を大幅に低下させます。")
             # 確定要素として、もし1000pt超えが複数回あれば設定6の可能性をほぼ0に
             if over_1000_cz_count >= 2:
                  setting_likelihood_scores['設定6'] = max(0, setting_likelihood_scores['設定6'] - 500) # 強力な減点
@@ -480,10 +481,10 @@ if st.button("設定を判別する", key="run_analysis"):
                 if "設定6濃厚" in indication_text:
                     strong_fixed_setting = '設定6'
                 elif "設定4以上濃厚" in indication_text or "設定456確定" in indication_text:
-                    if not strong_fixed_setting or strong_fixed_setting == '設定4以上': # より強い示唆がない場合のみ上書き
+                    if not strong_fixed_setting or strong_fixed_setting == '設定2以上': # より強い示唆がない場合のみ上書き
                         strong_fixed_setting = '設定4以上'
                 elif "設定2以上確定" in indication_text:
-                    if not strong_fixed_setting or (strong_fixed_setting != '設定4以上' and strong_fixed_setting != '設定6'):
+                    if not strong_fixed_setting: # より強い示唆がない場合のみ上書き
                         strong_fixed_setting = '設定2以上'
     else:
         st.write("**AT終了画面は入力されていません。**")
@@ -521,7 +522,7 @@ if st.button("設定を判別する", key="run_analysis"):
             if not strong_fixed_setting or strong_fixed_setting == '設定2以上':
                 strong_fixed_setting = '設定4以上'
         elif '+20' in olympia_addon:
-            if not strong_fixed_setting or (strong_fixed_setting != '設定4以上' and strong_fixed_setting != '設定6'):
+            if not strong_fixed_setting: # より強い示唆がない場合のみ上書き
                 strong_fixed_setting = '設定2以上'
     else:
         st.write("**踊れ！オリンピア上乗せ数字は入力されていません。**")
@@ -539,9 +540,9 @@ if st.button("設定を判別する", key="run_analysis"):
     total_first_unmei_eval = 0
     successful_first_unmei_no_forced = 0
     for entry in st.session_state.unmei_first:
-        if entry['success'] == '成功':
+        if entry['success'] != '選択なし': # 成功・失敗どちらでも試行回数にカウント
             total_first_unmei_eval += 1
-            if entry['trigger'] == 'レア役なし・最終ゲーム小役なし':
+            if entry['success'] == '成功' and entry['trigger'] == 'レア役なし・最終ゲーム小役なし':
                 successful_first_unmei_no_forced += 1
                 for s in setting_likelihood_scores.keys():
                     setting_likelihood_scores[s] += unmei_success_score['初回_自力成功_高設定'] # 強力な加点
@@ -568,7 +569,7 @@ if st.button("設定を判別する", key="run_analysis"):
         elif continue_unmei_rate >= unmei_success_rates['継続運命の一撃_設定4_自力']: # 60%
             setting_likelihood_scores['設定4'] += unmei_success_score['継続_自力成功_設定4_期待']
             setting_likelihood_scores['設定5'] += unmei_success_score['継続_自力成功_設定4_期待']
-        elif continue_unmei_rate < unmei_success_rates['継続運命の一撃_低設定_自力'] and successful_continue_unmei_no_forced == 0: # 30%未満かつ自力成功が0ならさらに減点
+        elif continue_unmei_rate < unmei_success_rates['継続_自力失敗_低設定_示唆'] and successful_continue_unmei_no_forced == 0: # 低い成功率かつ自力成功が0ならさらに減点
             for s in ['設定1', '設定2']:
                 setting_likelihood_scores[s] += abs(unmei_success_score['継続_自力失敗_低設定_示唆']) # 低設定側に加点
             for s in ['設定4', '設定5', '設定6']:
@@ -583,8 +584,8 @@ if st.button("設定を判別する", key="run_analysis"):
             setting_likelihood_scores[s] += at_direct_hit_score_per_hit.get(s, 0) * at_direct_hit_count # 直撃回数に応じて加点
         # 直撃回数が多ければ高設定示唆を強化
         if at_direct_hit_count >= 2:
-            if not strong_fixed_setting or (strong_fixed_setting != '設定6'):
-                 strong_fixed_setting = '設定4以上' # 複数回なら4以上示唆を強化
+            if not strong_fixed_setting: # 他のより強い示唆がない場合のみ
+                 strong_fixed_setting = '設定4以上'
 
 
     # --- B. 店舗・外部要因に関する評価 (スコアリング) ---
@@ -622,7 +623,7 @@ if st.button("設定を判別する", key="run_analysis"):
         elif s in ['設定1', '設定2']:
             # 低設定は外部要因の影響を小さくするか、逆の影響を持たせる（例: 高設定期待が高い日は低設定の期待度が下がる）
             setting_likelihood_scores[s] *= (1 - external_score_multiplier * 0.5) # 高設定寄りなら低設定は少し下がる
-        setting_likelihood_scores[s] = max(0, setting_likelihood_scores[s]) # スコアがマイナスにならないように
+        setting_likelihood_scores[s] = max(1, setting_likelihood_scores[s]) # スコアが0以下にならないように最低1を設定
 
     if other_machine_status:
         st.write(f"**その他の台の状況:** {other_machine_status}")
@@ -632,10 +633,10 @@ if st.button("設定を判別する", key="run_analysis"):
     st.markdown("---")
     st.subheader("### 総合判定")
 
-    # 確定示唆によるフィルタリング
+    # 確定示唆によるフィルタリングとスコアの強制
     if strong_fixed_setting:
         st.success(f"**🎉 {strong_fixed_setting}確定レベルの強力な示唆が確認されました！ 🎉**")
-        for s in list(setting_likelihood_scores.keys()): # dictionary size might change during iteration
+        for s in list(setting_likelihood_scores.keys()):
             if strong_fixed_setting == '設定6':
                 if s != '設定6': setting_likelihood_scores[s] = 0
             elif strong_fixed_setting == '設定4以上':
@@ -645,20 +646,19 @@ if st.button("設定を判別する", key="run_analysis"):
         
         # 確定示唆が出た場合のスコア調整（設定6を極端に高くする等）
         if strong_fixed_setting == '設定6':
-            setting_likelihood_scores['設定6'] = 10000 # 圧倒的に高く
+            setting_likelihood_scores['設定6'] = 1000000 # 圧倒的に高く
+            # 他の設定は0にする（既にされているが念のため）
+            for s in setting_likelihood_scores:
+                if s != '設定6':
+                    setting_likelihood_scores[s] = 0.0001 # 完全に0だと割り算で問題が出るので微小な値
         elif strong_fixed_setting == '設定4以上':
-            setting_likelihood_scores['設定4'] *= 2
-            setting_likelihood_scores['設定5'] *= 2
-            setting_likelihood_scores['設定6'] *= 2
+            for s in ['設定4', '設定5', '設定6']: setting_likelihood_scores[s] = max(1000, setting_likelihood_scores[s] * 2)
         elif strong_fixed_setting == '設定2以上':
-            setting_likelihood_scores['設定2'] *= 1.5
-            setting_likelihood_scores['設定4'] *= 1.5
-            setting_likelihood_scores['設定5'] *= 1.5
-            setting_likelihood_scores['設定6'] *= 1.5
+            for s in ['設定2', '設定4', '設定5', '設定6']: setting_likelihood_scores[s] = max(500, setting_likelihood_scores[s] * 1.5)
 
-    # 全てのスコアが0の場合の処理
+    # 全てのスコアが0の場合の処理 (微小な値を入れたので不要になる可能性あり)
     total_score_sum = sum(setting_likelihood_scores.values())
-    if total_score_sum == 0:
+    if total_score_sum == 0 or total_score_sum < 0.01: # ほぼ0の場合も考慮
         st.info("現時点では判断できる材料が少ないか、相殺する要素が多いです。")
         st.write("各設定の可能性:")
         for s in setting_likelihood_scores.keys():
@@ -666,7 +666,7 @@ if st.button("設定を判別する", key="run_analysis"):
         st.write("**高設定期待度: 0.00%**")
     else:
         # 各設定の可能性パーセンテージを計算
-        st.write("**各設定の可能性:**")
+        st.write("**各設定の可能性 (私の裁量による目安):**")
         probabilities = {}
         for s, score in setting_likelihood_scores.items():
             prob = (score / total_score_sum) * 100
@@ -689,8 +689,64 @@ if st.button("設定を判別する", key="run_analysis"):
 
     st.markdown("---")
     st.write("**詳細な示唆内容:**")
-    if indications:
-        for ind in indications:
+    # ここに各示唆内容をまとめる処理を再追加
+    final_indications = []
+    # AT初当たり
+    if total_games > 0 and at_first_hit > 0:
+        at_first_hit_rate = total_games / at_first_hit
+        if at_first_hit_rate < 300: final_indications.append("AT初当たりが良好。")
+        elif at_first_hit_rate > 400: final_indications.append("AT初当たりが重め。")
+    
+    # CZ当選
+    if cz_success_points:
+        total_cz_count = len(cz_success_points)
+        low_cz_count = sum(1 for p in cz_success_points if p <= 100)
+        if total_cz_count > 0 and low_cz_count / total_cz_count >= 0.3: final_indications.append("低ゲーム数でのCZ当選が頻繁。")
+        if over_1000_cz_count > 0: final_indications.append(f"1000pt超えCZ当選({over_1000_cz_count}回)あり。")
+        if karakuri_cz_count > 0 and total_games > 0:
+            karakuri_cz_rate = total_games / karakuri_cz_count
+            if karakuri_cz_rate < 500: final_indications.append("からくりレア役契機CZ良好。")
+            elif karakuri_cz_rate > 1000: final_indications.append("からくりレア役契機CZ低め。")
+
+    # AT終了画面
+    for screen, count in end_screen_counts.items():
+        if count > 0:
+            final_indications.append(f"AT終了画面「{screen}」({count}回)出現。")
+
+    # AT中のテーブル
+    for i, at_table in enumerate(st.session_state.at_tables):
+        selected_tables_base = []
+        if at_table['start'] != '選択なし': selected_tables_base.append(at_table['start'].split(' ')[0])
+        if at_table['success1'] != '選択なし': selected_tables_base.append(at_table['success1'].split(' ')[0])
+        if at_table['success2'] != '選択なし': selected_tables_base.append(at_table['success2'].split(' ')[0])
+        for table_name in selected_tables_base:
+            if table_name in ['テーブル3', 'テーブル4']:
+                final_indications.append(f"AT中の{table_name}選択を確認。")
+            
+    # 踊れ！オリンピア
+    if olympia_addon != '選択なし' and olympia_addon != 'その他': final_indications.append(f"踊れ！オリンピアで{olympia_addon}出現。")
+
+    # エンディングランプ
+    if ending_lamp == '虹色 (設定6濃厚)': final_indications.append("エンディングランプ虹色出現。")
+
+    # 運命の一撃
+    if successful_first_unmei_no_forced > 0: final_indications.append(f"初回運命の一撃で自力成功({successful_first_unmei_no_forced}回)確認。")
+    if total_continue_unmei_eval > 0:
+        if continue_unmei_rate >= unmei_success_rates['継続運命の一撃_設定6_自力']: final_indications.append("継続運命の一撃成功率が非常に高い。")
+        elif continue_unmei_rate >= unmei_success_rates['継続運命の一撃_設定4_自力']: final_indications.append("継続運命の一撃成功率が高め。")
+        elif continue_unmei_rate < unmei_success_rates['継続_自力失敗_低設定_示唆'] and successful_continue_unmei_no_forced == 0: final_indications.append("継続運命の一撃成功率が低め。")
+
+    # AT直撃
+    if at_direct_hit_count > 0: final_indications.append(f"AT直撃({at_direct_hit_count}回)確認。")
+
+    # 外部要因
+    if external_score_multiplier > 0.05: final_indications.append("店舗・外部要因で高設定期待度が増加。")
+    elif external_score_multiplier < -0.05: final_indications.append("店舗・外部要因で高設定期待度が減少。")
+    if other_machine_status: final_indications.append(f"その他の台の状況: {other_machine_status}")
+
+
+    if final_indications:
+        for ind in final_indications:
             st.write(f"- {ind}")
     else:
         st.write("現時点では特段の示唆はありません。")
