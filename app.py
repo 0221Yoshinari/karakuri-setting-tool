@@ -283,20 +283,22 @@ for i, entry in enumerate(st.session_state.unmei_first):
     with cols[0]:
         st.session_state.unmei_first[i]['success'] = st.selectbox(f"初回運命 {i+1}回目: 結果", options=unmei_options, index=unmei_options.index(entry['success']), key=f"unmei_first_success_{i}")
     with cols[1]:
-        # ★★★ここが変更点★★：ValueError回避 & 正しいoptions変数を指定
-        st.session_state.unmei_first[i]['trigger'] = st.selectbox(f"初回運命 {i+1}回目: 契機", options=trigger_options, index=trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0, key=f"unmei_first_trigger_{i}")
+        # ★★★この部分が変更点★★：ValueError回避 & 正しいoptions変数を指定
+        current_trigger_index = trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0
+        st.session_state.unmei_first[i]['trigger'] = st.selectbox(f"初回運命 {i+1}回目: 契機", options=trigger_options, index=current_trigger_index, key=f"unmei_first_trigger_{i}")
     with cols[2]:
         st.button("削除", key=f"remove_unmei_first_{i}", on_click=remove_unmei_first, args=(i,))
 
 st.markdown("**継続をかけた運命の一撃 (最大15回)**")
-st.button("継続運命の一撃を追加", on_click=add_unmei_continue)
+st.button("継続運命の一撃を追加", on_click=add_unmei_continue) # ★★★ここが変更点★★：on_on_clickをon_clickに修正
 for i, entry in enumerate(st.session_state.unmei_continue):
     cols = st.columns([0.4, 0.4, 0.2])
     with cols[0]:
         st.session_state.unmei_continue[i]['success'] = st.selectbox(f"継続運命 {i+1}回目: 結果", options=unmei_options, index=unmei_options.index(entry['success']), key=f"unmei_continue_success_{i}")
     with cols[1]:
-        # ★★★ここが変更点★★：ValueError回避 & 正しいoptions変数を指定
-        st.session_state.unmei_continue[i]['trigger'] = st.selectbox(f"継続運命 {i+1}回目: 契機", options=trigger_options, index=trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0, key=f"unmei_continue_trigger_{i}")
+        # ★★★この部分が変更点★★：ValueError回避 & 正しいoptions変数を指定
+        current_trigger_index = trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0
+        st.session_state.unmei_continue[i]['trigger'] = st.selectbox(f"継続運命 {i+1}回目: 契機", options=trigger_options, index=current_trigger_index, key=f"unmei_continue_trigger_{i}")
     with cols[2]:
         st.button("削除", key=f"remove_unmei_continue_{i}", on_click=remove_unmei_continue, args=(i,))
 
