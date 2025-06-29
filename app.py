@@ -126,6 +126,19 @@ table_score_weights = {
 }
 
 # AT終了画面のスコア（画像情報に基づく）
+at_end_screen_options_display = {
+    'フランシーヌ': '設定6濃厚',
+    'しろがね＆勝＆鳴海': '設定4以上濃厚',
+    'ギイ＋阿紫花': '設定2以上濃厚',
+    '女キャラ5人': '偶数設定示唆',
+    '敵キャラ5人': '奇数設定示唆',
+    '勝＋鳴海': 'デフォルト', # デフォルト画面
+    # 以下は画像からの追加画面
+    '奇数の高設定示唆画面': '奇数の高設定示唆',
+    '偶数の高設定示唆画面': '偶数の高設定示唆',
+    '設定2以上確定画面': '設定2以上確定',
+    '設定456確定画面': '設定456確定',
+}
 at_end_screen_scores = {
     'フランシーヌ':           {'設定1': -100, '設定2': -100, '設定4': -100, '設定5': -100, '設定6': 500}, # 設定6濃厚
     'しろがね＆勝＆鳴海':     {'設定1': -100, '設定2': -100, '設定4': 100, '設定5': 100, '設定6': 100},  # 設定4以上濃厚
@@ -196,9 +209,12 @@ for i, cz_entry in enumerate(st.session_state.cz_data):
 
 # AT終了画面
 st.subheader("4. AT終了画面")
+# オプションリストを確実に取得するために、ここで明示的に辞書からリストを作成
+end_screen_options_list = list(at_end_screen_options_display.keys()) 
+
 selected_end_screens = st.multiselect(
     "出現したAT終了画面を全て選択してください",
-    options=list(at_end_screen_options_display.keys()),
+    options=end_screen_options_list, # ★★★ ここを修正 ★★★
     default=[]
 )
 end_screen_counts = {}
@@ -283,7 +299,7 @@ for i, entry in enumerate(st.session_state.unmei_first):
     with cols[0]:
         st.session_state.unmei_first[i]['success'] = st.selectbox(f"初回運命 {i+1}回目: 結果", options=unmei_options, index=unmei_options.index(entry['success']), key=f"unmei_first_success_{i}")
     with cols[1]:
-        # ★★★この部分が変更点★★：ValueError回避 & 正しいoptions変数を指定
+        # ★★★ここが変更点★★：ValueError回避 & 正しいoptions変数を指定
         current_trigger_index = trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0
         st.session_state.unmei_first[i]['trigger'] = st.selectbox(f"初回運命 {i+1}回目: 契機", options=trigger_options, index=current_trigger_index, key=f"unmei_first_trigger_{i}")
     with cols[2]:
@@ -296,7 +312,7 @@ for i, entry in enumerate(st.session_state.unmei_continue):
     with cols[0]:
         st.session_state.unmei_continue[i]['success'] = st.selectbox(f"継続運命 {i+1}回目: 結果", options=unmei_options, index=unmei_options.index(entry['success']), key=f"unmei_continue_success_{i}")
     with cols[1]:
-        # ★★★この部分が変更点★★：ValueError回避 & 正しいoptions変数を指定
+        # ★★★ここが変更点★★：ValueError回避 & 正しいoptions変数を指定
         current_trigger_index = trigger_options.index(entry['trigger']) if entry['trigger'] in trigger_options else 0
         st.session_state.unmei_continue[i]['trigger'] = st.selectbox(f"継続運命 {i+1}回目: 契機", options=trigger_options, index=current_trigger_index, key=f"unmei_continue_trigger_{i}")
     with cols[2]:
