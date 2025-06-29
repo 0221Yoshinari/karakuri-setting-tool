@@ -41,7 +41,7 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3); /* 透明度を0.3に変更 (画像が50%程度薄く見えるように) */
+    background-color: rgba(0, 0, 0, 0.15); /* 透明度を0.3に変更 (画像が50%程度薄く見えるように) */
     z-index: 1;
     pointer-events: none; /* ★★★ここを追加：オーバーレイがクリックやスクロールをブロックしないようにする★★★ */
 }
