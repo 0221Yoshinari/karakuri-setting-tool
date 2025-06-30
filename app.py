@@ -20,7 +20,7 @@ html, body {
 
 /* Streamlitアプリ全体のコンテナ */
 .stApp {
-    background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/karakuri_bg.png"); /* ここをあなたのGitHubリポジトリ内の画像パスに修正 */
+    background-image: url("https://raw.githubusercontent.com/0221Yoshinari/karakuri-setting-tool/main/images/new_bg.jpg"); /* ここをあなたのGitHubリポジトリ内の画像パスに修正 */
     background-size: cover; /* 画面全体を覆う */
     background-position: center;
     background-repeat: no-repeat;
